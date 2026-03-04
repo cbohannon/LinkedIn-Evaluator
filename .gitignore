@@ -1,7 +1,28 @@
-.env
-.venv/
+# Environment / secrets
+.env*
+!.env.example
+
+# Claude Code
+.claude/
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Distribution / build
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# LinkedIn data & reports
 *.zip
 *.csv
 report.md
