@@ -44,6 +44,27 @@ def evaluate(profile: dict) -> str:
     return message.content[0].text
 
 
+def evaluate_raw(text: str) -> str:
+    """
+    Send raw profile text (e.g. extracted from HTML) to Claude and return the evaluation.
+    """
+    client = Anthropic()
+
+    message = client.messages.create(
+        model=MODEL,
+        max_tokens=4096,
+        system=SYSTEM_PROMPT,
+        messages=[
+            {
+                "role": "user",
+                "content": f"Please evaluate the following LinkedIn profile:\n\n{text}",
+            }
+        ],
+    )
+
+    return message.content[0].text
+
+
 def _format_profile(profile: dict) -> str:
     """Format the profile dict as readable text for the prompt."""
     lines = []
