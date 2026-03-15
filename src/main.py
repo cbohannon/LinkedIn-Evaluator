@@ -1,5 +1,8 @@
 import argparse
+import itertools
 import sys
+import threading
+import time
 
 from extractor import extract, cleanup
 from parser import parse
@@ -7,6 +10,26 @@ from evaluator import evaluate, evaluate_raw
 from html_parser import parse_html
 from browser import fetch_profile
 from reporter import report
+
+
+def _spinner(message: str, stop_event: threading.Event) -> None:
+    for frame in itertools.cycle(r"⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"):
+        if stop_event.is_set():
+            break
+        print(f"\r{message} {frame}", end="", flush=True, file=sys.stderr)
+        time.sleep(0.1)
+    print(f"\r{message} done.   ", file=sys.stderr)
+
+
+def _run_with_spinner(message: str, fn):
+    stop = threading.Event()
+    t = threading.Thread(target=_spinner, args=(message, stop))
+    t.start()
+    try:
+        return fn()
+    finally:
+        stop.set()
+        t.join()
 
 
 def main():
@@ -47,8 +70,7 @@ def main():
             print("Parsing profile data...", file=sys.stderr)
             profile = parse(files)
 
-            print("Sending to Claude for evaluation...", file=sys.stderr)
-            evaluation = evaluate(profile)
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate(profile))
 
             report(evaluation, profile, output=args.output)
 
@@ -56,8 +78,7 @@ def main():
             print("Parsing HTML...", file=sys.stderr)
             text = parse_html(args.html)
 
-            print("Sending to Claude for evaluation...", file=sys.stderr)
-            evaluation = evaluate_raw(text)
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text))
 
             report(evaluation, {}, output=args.output)
 
@@ -65,8 +86,7 @@ def main():
             print("Launching browser...", file=sys.stderr)
             text = fetch_profile(args.url)
 
-            print("Sending to Claude for evaluation...", file=sys.stderr)
-            evaluation = evaluate_raw(text)
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text))
 
             report(evaluation, {}, output=args.output)
 
