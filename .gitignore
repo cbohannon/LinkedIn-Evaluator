@@ -26,3 +26,7 @@ build/
 *.zip
 *.csv
 report.md
+tmp_parsed.txt
+
+# Browser automation session data
+.browser_profile/
