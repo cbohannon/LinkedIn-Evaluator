@@ -27,7 +27,7 @@ def _build_scorecard(scores: dict) -> str:
     ])
 
 
-def report(evaluation: dict, profile: dict, output: str = "console") -> None:
+def report(evaluation: dict, profile: dict, output: str = "console", role: str = "") -> None:
     """
     Output the evaluation as a formatted markdown report.
 
@@ -35,8 +35,9 @@ def report(evaluation: dict, profile: dict, output: str = "console") -> None:
         evaluation: Dict with 'scores' and 'evaluation' keys returned by Claude
         profile: Parsed profile dict (used for the report header)
         output: "console" to print, or a file path to save as markdown
+        role: Optional target role (e.g. "Senior DevOps Engineer")
     """
-    content = _build_report(evaluation, profile)
+    content = _build_report(evaluation, profile, role=role)
 
     if output == "console":
         print(content)
@@ -46,7 +47,7 @@ def report(evaluation: dict, profile: dict, output: str = "console") -> None:
         print(f"Report saved to {dest}", file=sys.stderr)
 
 
-def _build_report(evaluation: dict, profile: dict) -> str:
+def _build_report(evaluation: dict, profile: dict, role: str = "") -> str:
     scores = evaluation.get("scores", {})
     text = evaluation.get("evaluation", "")
 
@@ -59,6 +60,7 @@ def _build_report(evaluation: dict, profile: dict) -> str:
         "",
         f"**Name:** {name}" if name else "",
         f"**Headline:** {headline}" if headline else "",
+        f"**Target Role:** {role}" if role else "",
         f"**Date:** {today}",
         "",
         "---",

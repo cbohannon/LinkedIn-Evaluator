@@ -51,43 +51,41 @@ def _parse_response(raw: str) -> dict:
         return {"scores": {}, "evaluation": raw}
 
 
-def evaluate(profile: dict) -> dict:
+def evaluate(profile: dict, role: str = "") -> dict:
     """
     Send the profile dict to Claude and return the evaluation text.
     """
     client = Anthropic()
 
+    content = f"Please evaluate the following LinkedIn profile:\n\n{_format_profile(profile)}"
+    if role:
+        content = f"The candidate is targeting the role: {role}\n\n" + content
+
     message = client.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Please evaluate the following LinkedIn profile:\n\n{_format_profile(profile)}",
-            }
-        ],
+        messages=[{"role": "user", "content": content}],
     )
 
     return _parse_response(message.content[0].text)
 
 
-def evaluate_raw(text: str) -> dict:
+def evaluate_raw(text: str, role: str = "") -> dict:
     """
     Send raw profile text (e.g. extracted from HTML) to Claude and return the evaluation.
     """
     client = Anthropic()
 
+    content = f"Please evaluate the following LinkedIn profile:\n\n{text}"
+    if role:
+        content = f"The candidate is targeting the role: {role}\n\n" + content
+
     message = client.messages.create(
         model=MODEL,
         max_tokens=4096,
         system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": f"Please evaluate the following LinkedIn profile:\n\n{text}",
-            }
-        ],
+        messages=[{"role": "user", "content": content}],
     )
 
     return _parse_response(message.content[0].text)

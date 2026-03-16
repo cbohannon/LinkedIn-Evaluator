@@ -58,6 +58,12 @@ def main():
         metavar="PATH",
         help='Output destination: "console" (default) or a file path (e.g. report.md)',
     )
+    parser.add_argument(
+        "--role",
+        default="",
+        metavar="ROLE",
+        help='Target role for evaluation (e.g. "Senior DevOps Engineer")',
+    )
 
     args = parser.parse_args()
 
@@ -70,25 +76,25 @@ def main():
             print("Parsing profile data...", file=sys.stderr)
             profile = parse(files)
 
-            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate(profile))
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate(profile, role=args.role))
 
-            report(evaluation, profile, output=args.output)
+            report(evaluation, profile, output=args.output, role=args.role)
 
         elif args.html:
             print("Parsing HTML...", file=sys.stderr)
             text = parse_html(args.html)
 
-            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text))
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text, role=args.role))
 
-            report(evaluation, {}, output=args.output)
+            report(evaluation, {}, output=args.output, role=args.role)
 
         elif args.url:
             print("Launching browser...", file=sys.stderr)
             text = fetch_profile(args.url)
 
-            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text))
+            evaluation = _run_with_spinner("Sending to Claude for evaluation...", lambda: evaluate_raw(text, role=args.role))
 
-            report(evaluation, {}, output=args.output)
+            report(evaluation, {}, output=args.output, role=args.role)
 
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
