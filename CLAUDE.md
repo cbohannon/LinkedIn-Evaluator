@@ -32,8 +32,8 @@ All three modes converge at `evaluator.py` and `reporter.py`. The `--zip` path u
 | `src/parser.py` | Parses CSVs into a normalized profile dict |
 | `src/html_parser.py` | Extracts visible text from a saved HTML file |
 | `src/browser.py` | Playwright browser automation — fetches and expands a live LinkedIn profile |
-| `src/evaluator.py` | Sends profile to Claude API, returns evaluation text |
-| `src/reporter.py` | Adds header and routes output to console or file |
+| `src/evaluator.py` | Sends profile to Claude API, returns `dict` with `scores` and `evaluation` keys |
+| `src/reporter.py` | Builds scorecard table, adds header, routes output to console or file |
 | `prompts/evaluate.md` | Prompt template reference (system prompt lives in evaluator.py) |
 
 ## `--html` Mode Notes
@@ -64,10 +64,12 @@ All three modes converge at `evaluator.py` and `reporter.py`. The `--zip` path u
 ## Important Notes
 - LinkedIn CSVs sometimes include "Notes:" metadata rows before the real header — `_read_csv()` in `parser.py` skips these
 - LinkedIn CSVs use UTF-8 with BOM — handled via `encoding="utf-8-sig"`
-- The system prompt in `evaluator.py` enforces a strict 7-section output structure
+- The system prompt in `evaluator.py` enforces a strict 7-section output structure and requests a JSON response
+- Claude returns `{"scores": {...}, "evaluation": "..."}` — `_parse_response()` handles fallback if JSON fails
 - `max_tokens=4096` — needed for complete evaluations on large profiles
 - Temp extraction directory is always cleaned up in `main.py`'s `finally` block
 - All progress messages go to `stderr`; report content goes to `stdout`
+- `--role` injects a role context line at the top of the user message (not the system prompt)
 
 ## Environment
 - Python 3.12
@@ -75,6 +77,6 @@ All three modes converge at `evaluator.py` and `reporter.py`. The `--zip` path u
 - API key in `.env` as `ANTHROPIC_API_KEY`
 - Model: `claude-opus-4-6`
 
-## Planned Enhancements
+## Implemented Features
+- Scorecard table at top of report (per-section scores 1–10)
 - `--role` flag for target role input (e.g. `--role "Senior DevOps Engineer"`)
-- Scoring dashboard / summary table at top of report

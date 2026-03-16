@@ -4,15 +4,11 @@ A Python CLI tool that evaluates your LinkedIn profile using the Claude API and 
 
 ## How It Works
 
-You provide your LinkedIn profile via one of three input methods (see below). The tool sends your profile data to Claude and outputs a markdown report covering:
+You provide your LinkedIn profile via one of three input methods (see below). The tool sends your profile data to Claude and outputs a markdown report with:
 
-- Overall score
-- Headline analysis
-- Summary / About section
-- Experience bullets
-- Skills gaps
-- Recommendations (social proof)
-- Top quick wins
+- A **scorecard table** showing per-section scores at a glance
+- Section-by-section analysis: Headline, Summary, Experience, Skills, Recommendations
+- Top quick wins — the 3 changes to make immediately for the biggest impact
 
 ## Prerequisites
 
@@ -58,6 +54,9 @@ python src/main.py --zip /path/to/linkedin-export.zip
 
 # Save report to a markdown file
 python src/main.py --zip /path/to/linkedin-export.zip --output report.md
+
+# Tailor evaluation to a specific target role
+python src/main.py --zip /path/to/linkedin-export.zip --role "Senior DevOps Engineer" --output report.md
 ```
 
 ---
@@ -76,6 +75,9 @@ Save your LinkedIn profile page as an HTML file from your browser and pass it di
 **Usage:**
 ```bash
 python src/main.py --html /path/to/profile.html
+
+# With a target role
+python src/main.py --html /path/to/profile.html --role "Product Manager"
 ```
 
 > **Note:** Because LinkedIn collapses sections before you save, the resulting evaluation may be less detailed than `--zip` or `--url`. Manually expanding all sections before saving will improve results.
@@ -95,6 +97,9 @@ playwright install chromium
 **Usage:**
 ```bash
 python src/main.py --url "https://www.linkedin.com/in/your-username/"
+
+# With a target role
+python src/main.py --url "https://www.linkedin.com/in/your-username/" --role "Staff Engineer"
 ```
 
 **First run:** A browser window will open. If you are not already logged in to LinkedIn, you will be prompted to log in manually. After logging in, return to the terminal and press Enter. Your session is saved in `.browser_profile/` so subsequent runs log in automatically.
@@ -112,7 +117,22 @@ python src/main.py --url "https://www.linkedin.com/in/your-username/"
 
 **Name:** Jane Smith
 **Headline:** Senior Product Manager | SaaS | B2B
+**Target Role:** Director of Product
 **Date:** March 04, 2026
+
+---
+
+## Scorecard
+
+| Section                 | Score |
+|-------------------------|-------|
+| Headline                |  8/10 |
+| Summary / About         |  7/10 |
+| Experience              |  9/10 |
+| Skills                  |  8/10 |
+| Recommendations         |  6/10 |
+|-------------------------|-------|
+| Overall                 |  8/10 |
 
 ---
 
@@ -124,6 +144,3 @@ python src/main.py --url "https://www.linkedin.com/in/your-username/"
 
 Your LinkedIn data never leaves your machine except for the API call to Anthropic. ZIP files, CSV files, and browser session data are excluded from version control via `.gitignore`. See [Anthropic's privacy policy](https://www.anthropic.com/privacy) for how API data is handled.
 
-## Planned Enhancements
-
-- `--role` flag to tailor recommendations to a specific target role
