@@ -1,3 +1,5 @@
+import json
+
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
@@ -20,10 +22,36 @@ Structure your evaluation with exactly these sections:
 5. Skills — relevance, coverage, notable gaps
 6. Recommendations — social proof assessment (if none, note the impact)
 7. Quick Wins — the top 3 changes to make immediately for the biggest impact
+
+Return your response as a single JSON object with exactly this structure:
+{
+  "scores": {
+    "headline": <int 1-10>,
+    "summary": <int 1-10>,
+    "experience": <int 1-10>,
+    "skills": <int 1-10>,
+    "recommendations": <int 1-10>,
+    "overall": <int 1-10>
+  },
+  "evaluation": "<full markdown evaluation text as a single escaped string>"
+}
+
+The "evaluation" field must contain the complete 7-section evaluation exactly as you would normally write it. Do not abbreviate. Return only the JSON object — no additional text before or after it.
 """
 
 
-def evaluate(profile: dict) -> str:
+def _parse_response(raw: str) -> dict:
+    """Parse Claude's JSON response. Falls back gracefully on failure."""
+    try:
+        text = raw.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+        return json.loads(text)
+    except (json.JSONDecodeError, ValueError):
+        return {"scores": {}, "evaluation": raw}
+
+
+def evaluate(profile: dict) -> dict:
     """
     Send the profile dict to Claude and return the evaluation text.
     """
@@ -41,10 +69,10 @@ def evaluate(profile: dict) -> str:
         ],
     )
 
-    return message.content[0].text
+    return _parse_response(message.content[0].text)
 
 
-def evaluate_raw(text: str) -> str:
+def evaluate_raw(text: str) -> dict:
     """
     Send raw profile text (e.g. extracted from HTML) to Claude and return the evaluation.
     """
@@ -62,7 +90,7 @@ def evaluate_raw(text: str) -> str:
         ],
     )
 
-    return message.content[0].text
+    return _parse_response(message.content[0].text)
 
 
 def _format_profile(profile: dict) -> str:
