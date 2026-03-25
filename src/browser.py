@@ -17,10 +17,12 @@ _PROJECT_ROOT = Path(__file__).parent.parent
 BROWSER_PROFILE_DIR = _PROJECT_ROOT / ".browser_profile"
 
 _PAGE_LOAD_TIMEOUT = 15_000
-_EXPAND_WAIT_MS = 500
+_EXPAND_WAIT_MS = 800
+_SCROLL_PAUSE_MS = 1200
 
-# Inline-expansion button text patterns (expand in place, no navigation)
-_EXPAND_BUTTON_TEXTS = ["see more", "show more"]
+# Inline-expansion button text patterns (expand in place, no navigation).
+# Partial matches — "see more" also catches "see more experience", etc.
+_EXPAND_BUTTON_TEXTS = ["see more", "show more", "show all", "see all"]
 
 
 def fetch_profile(url: str) -> str:
@@ -100,6 +102,23 @@ def _navigate_and_authenticate(page, url: str) -> None:
         )
 
     print("Profile page loaded.", file=sys.stderr)
+    _scroll_to_load(page)
+
+
+def _scroll_to_load(page) -> None:
+    """Scroll down incrementally to trigger LinkedIn's lazy-loaded sections."""
+    print("Scrolling to load all sections...", file=sys.stderr)
+    last_height = page.evaluate("document.body.scrollHeight")
+    while True:
+        page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        page.wait_for_timeout(_SCROLL_PAUSE_MS)
+        new_height = page.evaluate("document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+    # Scroll back to the top so section expansion clicks are reliable
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(500)
 
 
 def _is_login_page(page) -> bool:
@@ -110,6 +129,7 @@ def _is_login_page(page) -> bool:
 
 
 def _expand_sections(page) -> None:
+    """Click all inline-expansion buttons; skip anything that would open a modal or navigate away."""
     print("Expanding collapsed sections...", file=sys.stderr)
     expanded_count = 0
 
@@ -120,6 +140,13 @@ def _expand_sections(page) -> None:
             btn = buttons.nth(i)
             try:
                 btn.scroll_into_view_if_needed(timeout=2000)
+
+                # Skip buttons that open a modal overlay (aria-haspopup="dialog")
+                # — those navigate away from the profile page instead of expanding inline.
+                popup_type = btn.get_attribute("aria-haspopup")
+                if popup_type in ("dialog", "true"):
+                    continue
+
                 btn.click(timeout=2000)
                 expanded_count += 1
                 page.wait_for_timeout(_EXPAND_WAIT_MS)

@@ -50,7 +50,7 @@ def main():
     input_group.add_argument(
         "--url",
         metavar="URL",
-        help="LinkedIn profile URL to fetch and evaluate using browser automation",
+        help="LinkedIn profile URL to fetch and evaluate using browser automation (results may be incomplete — use --zip for best accuracy)",
     )
     parser.add_argument(
         "--output",
@@ -89,6 +89,7 @@ def main():
             report(evaluation, {}, output=args.output, role=args.role)
 
         elif args.url:
+            print("Warning: URL mode may produce incomplete results if LinkedIn has collapsed or hidden sections. Use --zip for best accuracy.", file=sys.stderr)
             print("Launching browser...", file=sys.stderr)
             text = fetch_profile(args.url)
 

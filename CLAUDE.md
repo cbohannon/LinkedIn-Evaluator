@@ -42,13 +42,16 @@ All three modes converge at `evaluator.py` and `reporter.py`. The `--zip` path u
 - Results are less detailed than `--zip` or `--url` unless sections are manually expanded before saving
 
 ## `--url` Mode Notes
+- **Use with caution** — results may be incomplete; LinkedIn's interface changes frequently. `--zip` is preferred.
+- A runtime warning is printed to stderr and the `--help` text flags this limitation
 - Uses `browser.py` (`fetch_profile(url) -> str`)
 - Requires one-time setup: `pip install playwright && playwright install chromium`
 - Always runs `headless=False` — LinkedIn is more likely to block headless browsers
 - Uses `--disable-blink-features=AutomationControlled` to suppress Chrome's automation flag
 - Session is persisted in `.browser_profile/` (gitignored) — first run may require manual login
 - `_is_login_page()` detects `/login`, `/checkpoint/`, and `/authwall` redirects
-- `_expand_sections()` clicks all "see more" / "show more" buttons before extracting text
+- `_scroll_to_load()` incrementally scrolls the page to trigger lazy-loaded sections before expanding
+- `_expand_sections()` clicks "see more" / "show more" / "show all" / "see all" buttons; skips `aria-haspopup="dialog"` buttons that would open modals
 - Text is extracted with `page.inner_text("body")` — respects CSS visibility, excludes hidden elements
 - `_validate_url()` enforces `linkedin.com` domain and `/in/` path before launching the browser
 

@@ -84,9 +84,11 @@ python src/main.py --html /path/to/profile.html --role "Product Manager"
 
 ---
 
-### Option 3: `--url` — Browser Automation (recommended for quick evaluations)
+### Option 3: `--url` — Browser Automation
 
-The easiest option after first-time setup. Provide your LinkedIn profile URL and the tool launches a real browser, automatically expands all collapsed sections, extracts the full visible text, and sends it to Claude.
+> **Use with caution:** Results may be incomplete. LinkedIn's interface changes frequently and some sections may not be captured reliably. For best accuracy, use `--zip`.
+
+Provide your LinkedIn profile URL and the tool launches a real browser, automatically scrolls the page to trigger lazy-loaded sections, expands collapsed content, extracts the full visible text, and sends it to Claude.
 
 **One-time setup:**
 ```bash
@@ -106,7 +108,7 @@ python src/main.py --url "https://www.linkedin.com/in/your-username/" --role "St
 
 **Subsequent runs:** The browser opens, navigates directly to the profile, expands sections, and closes — no manual steps required.
 
-> **Note:** `--url` works best on your own profile or public profiles. LinkedIn must be able to display the profile while you are logged in.
+> **Note:** `--url` works best on your own profile or public profiles. LinkedIn must be able to display the profile while you are logged in. Even so, results may be incomplete if LinkedIn has hidden or restructured sections.
 
 ---
 
