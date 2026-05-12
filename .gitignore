@@ -30,3 +30,5 @@ tmp_parsed.txt
 
 # Browser automation session data
 .browser_profile/
+.env.bak
+*.bak
